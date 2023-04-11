@@ -89,21 +89,15 @@ pub mod auction_house {
         let system_program = &ctx.accounts.system_program;
 
         let is_native = treasury_mint.key() == spl_token::native_mint::id();
-        let auction_house_seeds = [
-            PREFIX.as_bytes(),
-            auction_house.creator.as_ref(),
-            auction_house.treasury_mint.as_ref(),
-            &[auction_house.bump],
-        ];
 
-        let ah_key = auction_house.key();
-        let auction_house_treasury_seeds = [
-            PREFIX.as_bytes(),
-            ah_key.as_ref(),
-            TREASURY.as_bytes(),
-            &[auction_house.treasury_bump],
-        ];
         if !is_native {
+            let auction_house_seeds = [
+                PREFIX.as_bytes(),
+                auction_house.creator.as_ref(),
+                auction_house.treasury_mint.as_ref(),
+                &[auction_house.bump],
+            ];
+
             invoke_signed(
                 &spl_token::instruction::transfer(
                     token_program.key,
@@ -122,6 +116,14 @@ pub mod auction_house {
                 &[&auction_house_seeds],
             )?;
         } else {
+            let ah_key = auction_house.key();
+            let auction_house_treasury_seeds = [
+                PREFIX.as_bytes(),
+                ah_key.as_ref(),
+                TREASURY.as_bytes(),
+                &[auction_house.treasury_bump],
+            ];
+
             invoke_signed(
                 &system_instruction::transfer(
                     &auction_house_treasury.key(),
@@ -450,6 +452,7 @@ pub mod auction_house {
         )
     }
 
+    /* BOYNC - USELESS
     pub fn execute_partial_sale<'info>(
         ctx: Context<'_, '_, '_, 'info, ExecutePartialSale<'info>>,
         escrow_payment_bump: u8,
@@ -471,6 +474,7 @@ pub mod auction_house {
             partial_order_price,
         )
     }
+    */
 
     pub fn auctioneer_execute_sale<'info>(
         ctx: Context<'_, '_, '_, 'info, AuctioneerExecuteSale<'info>>,
@@ -490,6 +494,7 @@ pub mod auction_house {
         )
     }
 
+    /* BOYNC - USELESS
     pub fn auctioneer_execute_partial_sale<'info>(
         ctx: Context<'_, '_, '_, 'info, AuctioneerExecutePartialSale<'info>>,
         escrow_payment_bump: u8,
@@ -511,6 +516,7 @@ pub mod auction_house {
             partial_order_price,
         )
     }
+    */
 
     pub fn sell<'info>(
         ctx: Context<'_, '_, '_, 'info, Sell<'info>>,

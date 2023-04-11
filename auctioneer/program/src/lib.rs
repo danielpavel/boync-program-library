@@ -92,10 +92,10 @@ pub mod auctioneer {
         start_time: UnixTimestamp,
         end_time: UnixTimestamp,
         reserve_price: Option<u64>,
-        min_bid_increment: Option<u64>,
-        time_ext_period: Option<u32>,
+        floor_price: Option<u64>,
+        starting_price_basis_points: Option<u16>,
+        bid_increment_basis_points: Option<u16>,
         time_ext_delta: Option<u32>,
-        allow_high_bid_cancel: Option<bool>,
     ) -> Result<()> {
         auctioneer_sell(
             ctx,
@@ -107,10 +107,10 @@ pub mod auctioneer {
             start_time,
             end_time,
             reserve_price,
-            min_bid_increment,
-            time_ext_period,
+            floor_price,
+            starting_price_basis_points,
+            bid_increment_basis_points,
             time_ext_delta,
-            allow_high_bid_cancel,
         )
     }
 

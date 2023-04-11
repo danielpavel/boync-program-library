@@ -9,7 +9,9 @@ function exists_in_list() {
 
 input=$1
 
-programs="auction-house auctioneer bubblegum candy-machine candy-machine-core fixed-price-sale gumdrop hydra nft-packs token-entangler token-metadata"
+# !!! BOYNC EDIT !!!
+# programs="auction-house auctioneer bubblegum candy-machine candy-machine-core fixed-price-sale gumdrop hydra nft-packs token-entangler token-metadata"
+programs="auction-house auctioneer"
 
 mkdir -p test-programs
 

@@ -33,7 +33,7 @@ pub fn assert_higher_bid(
     if new_bid_price <= listing_config.highest_bid.amount {
         return err!(AuctioneerError::BidTooLow);
     } else if (listing_config.highest_bid.amount > 0)
-        && (new_bid_price < (listing_config.highest_bid.amount + listing_config.min_bid_increment))
+        && (new_bid_price < (listing_config.highest_bid.amount + listing_config.bid_increment))
     {
         return err!(AuctioneerError::BelowBidIncrement);
     }
@@ -42,12 +42,12 @@ pub fn assert_higher_bid(
 }
 
 pub fn assert_exceeds_reserve_price(
-    listing_config: &Account<ListingConfig>,
-    new_bid_price: u64,
+    _listing_config: &Account<ListingConfig>,
+    _new_bid_price: u64,
 ) -> Result<()> {
-    if new_bid_price < listing_config.reserve_price {
-        return err!(AuctioneerError::BelowReservePrice);
-    }
+    //if new_bid_price < listing_config.reserve_price {
+    //    return err!(AuctioneerError::BelowReservePrice);
+    //}
 
     Ok(())
 }
@@ -63,11 +63,12 @@ pub fn assert_highest_bidder(
     Ok(())
 }
 
+/* BOYNC Updated */
 pub fn process_time_extension(listing_config: &mut Account<ListingConfig>) -> Result<()> {
     let clock = Clock::get()?;
     let current_timestamp = clock.unix_timestamp;
 
-    if current_timestamp >= (listing_config.end_time - i64::from(listing_config.time_ext_period)) {
+    if current_timestamp <= listing_config.end_time {
         listing_config.end_time += i64::from(listing_config.time_ext_delta);
     }
 

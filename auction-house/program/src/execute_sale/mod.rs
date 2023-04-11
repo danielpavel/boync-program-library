@@ -424,6 +424,7 @@ impl<'info> From<ExecutePartialSale<'info>> for ExecuteSale<'info> {
     }
 }
 
+/* BOYNC - USELESS
 pub fn execute_partial_sale<'info>(
     ctx: Context<'_, '_, '_, 'info, ExecutePartialSale<'info>>,
     escrow_payment_bump: u8,
@@ -475,6 +476,7 @@ pub fn execute_partial_sale<'info>(
         partial_order_price,
     )
 }
+*/
 
 #[derive(Accounts)]
 #[instruction(
@@ -916,6 +918,7 @@ impl<'info> From<AuctioneerExecutePartialSale<'info>> for AuctioneerExecuteSale<
     }
 }
 
+/* !!! BOYNC - USELESS !!!
 pub fn auctioneer_execute_partial_sale<'info>(
     ctx: Context<'_, '_, '_, 'info, AuctioneerExecutePartialSale<'info>>,
     escrow_payment_bump: u8,
@@ -976,19 +979,20 @@ pub fn auctioneer_execute_partial_sale<'info>(
         partial_order_price,
     )
 }
+*/
 
 /// Execute sale between provided buyer and seller trade state accounts transferring funds to seller wallet and token to buyer wallet.
 #[inline(never)]
 fn auctioneer_execute_sale_logic<'c, 'info>(
     accounts: &mut AuctioneerExecuteSale<'info>,
-    remaining_accounts: &'c [AccountInfo<'info>],
+    _remaining_accounts: &'c [AccountInfo<'info>],
     escrow_payment_bump: u8,
     _free_trade_state_bump: u8,
     program_as_signer_bump: u8,
     buyer_price: u64,
     token_size: u64,
-    partial_order_size: Option<u64>,
-    partial_order_price: Option<u64>,
+    _partial_order_size: Option<u64>,
+    _partial_order_price: Option<u64>,
 ) -> Result<()> {
     let buyer = &accounts.buyer;
     let seller = &accounts.seller;
@@ -1012,14 +1016,14 @@ fn auctioneer_execute_sale_logic<'c, 'info>(
     let program_as_signer = &accounts.program_as_signer;
     let rent = &accounts.rent;
 
-    let metadata_clone = metadata.to_account_info();
-    let escrow_clone = escrow_payment_account.to_account_info();
-    let auction_house_clone = auction_house.to_account_info();
-    let ata_clone = ata_program.to_account_info();
+    let _metadata_clone = metadata.to_account_info();
+    let _escrow_clone = escrow_payment_account.to_account_info();
+    let _auction_house_clone = auction_house.to_account_info();
+    let _ata_clone = ata_program.to_account_info();
     let token_clone = token_program.to_account_info();
-    let sys_clone = system_program.to_account_info();
-    let rent_clone = rent.to_account_info();
-    let treasury_clone = auction_house_treasury.to_account_info();
+    let _sys_clone = system_program.to_account_info();
+    let _rent_clone = rent.to_account_info();
+    let _treasury_clone = auction_house_treasury.to_account_info();
     let authority_clone = authority.to_account_info();
     let buyer_receipt_clone = buyer_receipt_token_account.to_account_info();
     let token_account_clone = token_account.to_account_info();
@@ -1058,6 +1062,24 @@ fn auctioneer_execute_sale_logic<'c, 'info>(
 
     let token_account_data = SplAccount::unpack(&token_account.data.borrow())?;
 
+    assert_valid_trade_state(
+        &buyer.key(),
+        auction_house,
+        buyer_price,
+        token_size,
+        buyer_trade_state,
+        &token_mint.key(),
+        &token_account.key(),
+        ts_bump,
+    )?;
+
+    if token_account_data.amount < token_size {
+        return Err(AuctionHouseError::NotEnoughTokensAvailableForPurchase.into());
+    };
+
+    let (size, price) = (token_size, buyer_price);
+
+    /* BOYNC useless
     let (size, price): (u64, u64) = match (partial_order_size, partial_order_price) {
         (Some(size), Some(price)) => {
             assert_valid_trade_state(
@@ -1107,7 +1129,8 @@ fn auctioneer_execute_sale_logic<'c, 'info>(
             return Err(AuctionHouseError::MissingElementForPartialOrder.into());
         }
     };
-
+    */
+    
     let auction_house_key = auction_house.key();
     let seeds = [
         PREFIX.as_bytes(),
@@ -1125,7 +1148,7 @@ fn auctioneer_execute_sale_logic<'c, 'info>(
         auction_house_fee_account.to_account_info(),
         &seeds,
     )?;
-    let fee_payer_clone = fee_payer.to_account_info();
+    let _fee_payer_clone = fee_payer.to_account_info();
 
     assert_is_ata(
         &token_account.to_account_info(),
@@ -1188,12 +1211,13 @@ fn auctioneer_execute_sale_logic<'c, 'info>(
 
     // with the native account, the escrow is its own owner,
     // whereas with token, it is the auction house that is owner.
-    let signer_seeds_for_royalties = if is_native {
+    let _signer_seeds_for_royalties = if is_native {
         escrow_signer_seeds
     } else {
         ah_seeds
     };
 
+    /*
     let buyer_leftover_after_royalties = pay_creator_fees(
         &mut remaining_accounts.iter(),
         &metadata_clone,
@@ -1225,6 +1249,7 @@ fn auctioneer_execute_sale_logic<'c, 'info>(
     let buyer_leftover_after_royalties_and_house_fee = buyer_leftover_after_royalties
         .checked_sub(auction_house_fee_paid)
         .ok_or(AuctionHouseError::NumericalOverflow)?;
+    */
 
     if !is_native {
         if seller_payment_receipt_account.data_is_empty() {
@@ -1259,7 +1284,7 @@ fn auctioneer_execute_sale_logic<'c, 'info>(
                 &seller_payment_receipt_account.key(),
                 &auction_house.key(),
                 &[],
-                buyer_leftover_after_royalties_and_house_fee,
+                price,
             )?,
             &[
                 escrow_payment_account.to_account_info(),
@@ -1275,7 +1300,7 @@ fn auctioneer_execute_sale_logic<'c, 'info>(
             &system_instruction::transfer(
                 escrow_payment_account.key,
                 seller_payment_receipt_account.key,
-                buyer_leftover_after_royalties_and_house_fee,
+                price,
             ),
             &[
                 escrow_payment_account.to_account_info(),
@@ -1343,6 +1368,7 @@ fn auctioneer_execute_sale_logic<'c, 'info>(
         &fee_payer.to_account_info(),
     )?;
 
+    // Close the seller trade state account if the rest of execute sale was successful.
     let token_account_data = SplAccount::unpack(&token_account.data.borrow())?;
     if token_account_data.delegated_amount == 0 {
         close_account(

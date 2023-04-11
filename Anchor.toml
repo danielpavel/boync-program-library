@@ -2,8 +2,10 @@
 url = "https://anchor.projectserum.com"
 
 [provider]
+#cluster = "devnet"
 cluster = "localnet"
-wallet = "~/.config/solana/id.json"
+#wallet = "~/.config/solana/id.json"
+wallet = "/Users/danielpavel/.config/solana/devnet-wallet-1.json"
 
 [programs.localnet]
 auction_house="hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk"
@@ -35,10 +37,6 @@ program = "target/deploy/mpl_hydra.so"
 
 [workspace]
 members = [
-  "token-entangler/program",
-  "token-metadata/program",
   "auction-house/program",
-  "fixed-price-sale/program",
-  "hydra/program",
-  "bubblegum/program",
+  "auctioneer/program",
 ]

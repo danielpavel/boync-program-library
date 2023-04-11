@@ -10,7 +10,7 @@ use mpl_auction_house::{
     constants::{AUCTIONEER, FEE_PAYER, PREFIX, SIGNER},
     cpi::accounts::AuctioneerSell as AHSell,
     program::AuctionHouse as AuctionHouseProgram,
-    AuctionHouse,
+    AuctionHouse, errors::AuctionHouseError,
 };
 
 use solana_program::{clock::UnixTimestamp, program::invoke_signed};
@@ -114,21 +114,42 @@ pub fn auctioneer_sell<'info>(
     token_size: u64,
     start_time: UnixTimestamp,
     end_time: UnixTimestamp,
-    reserve_price: Option<u64>,
-    min_bid_increment: Option<u64>,
-    time_ext_period: Option<u32>,
+    _reserve_price: Option<u64>,
+    floor_price: Option<u64>,
+    starting_price_basis_points: Option<u16>,
+    bid_increment_basis_points: Option<u16>,
     time_ext_delta: Option<u32>,
-    allow_high_bid_cancel: Option<bool>,
 ) -> Result<()> {
     ctx.accounts.listing_config.version = ListingConfigVersion::V0;
     ctx.accounts.listing_config.highest_bid.version = ListingConfigVersion::V0;
     ctx.accounts.listing_config.start_time = start_time;
     ctx.accounts.listing_config.end_time = end_time;
-    ctx.accounts.listing_config.reserve_price = reserve_price.unwrap_or(0);
-    ctx.accounts.listing_config.min_bid_increment = min_bid_increment.unwrap_or(0);
-    ctx.accounts.listing_config.time_ext_period = time_ext_period.unwrap_or(0);
+    
+    // TODO: Safe guards around `floor_price`.
+    let fp = floor_price.unwrap_or(0 as u64);
+
+    ctx.accounts.listing_config.starting_price_basis_points = starting_price_basis_points.unwrap_or(0);
+    ctx.accounts.listing_config.bid_increment_basis_points = bid_increment_basis_points.unwrap_or(0);
+    let spbp = ctx.accounts.listing_config.starting_price_basis_points;
+    let bibp = ctx.accounts.listing_config.bid_increment_basis_points;
+    ctx.accounts.listing_config.starting_price = (fp as u128)
+                                                    .checked_mul(spbp as u128)
+                                                    .ok_or(AuctionHouseError::NumericalOverflow)?
+                                                    .checked_div(10000)
+                                                    .ok_or(AuctionHouseError::NumericalOverflow)? as u64;
+
+    ctx.accounts.listing_config.next_bid = ctx.accounts.listing_config.starting_price;
+    ctx.accounts.listing_config.bid_increment = (ctx.accounts.listing_config.next_bid as u128)
+                                                    .checked_mul(bibp as u128)
+                                                    .ok_or(AuctionHouseError::NumericalOverflow)?
+                                                    .checked_div(10000)
+                                                    .ok_or(AuctionHouseError::NumericalOverflow)? as u64;
     ctx.accounts.listing_config.time_ext_delta = time_ext_delta.unwrap_or(0);
-    ctx.accounts.listing_config.allow_high_bid_cancel = allow_high_bid_cancel.unwrap_or(false);
+
+    // ctx.accounts.listing_config.reserve_price = reserve_price.unwrap_or(0);
+    // ctx.accounts.listing_config.time_ext_period = time_ext_period.unwrap_or(0);
+    // ctx.accounts.listing_config.allow_high_bid_cancel = allow_high_bid_cancel.unwrap_or(false);
+
     ctx.accounts.listing_config.bump = *ctx
         .bumps
         .get("listing_config")

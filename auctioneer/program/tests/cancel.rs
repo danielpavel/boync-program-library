@@ -158,7 +158,7 @@ async fn cancel_bid() {
         None,
         None,
         None,
-        Some(true),
+        None,
     );
     context
         .banks_client
@@ -282,7 +282,7 @@ async fn cancel_highest_bid() {
         None,
         None,
         None,
-        Some(false),
+        None,
     );
     context
         .banks_client

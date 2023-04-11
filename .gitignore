@@ -33,3 +33,4 @@ yarn-error.log*
 test-programs/*
 *-keypair.json
 
+.gitmessage
