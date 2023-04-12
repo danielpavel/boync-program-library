@@ -714,6 +714,7 @@ pub fn auctioneer_execute_sale<'info>(
     )
 }
 
+/*
 #[derive(Accounts, Clone)]
 #[instruction(
     escrow_payment_bump: u8,
@@ -917,6 +918,7 @@ impl<'info> From<AuctioneerExecutePartialSale<'info>> for AuctioneerExecuteSale<
         }
     }
 }
+*/
 
 /* !!! BOYNC - USELESS !!!
 pub fn auctioneer_execute_partial_sale<'info>(
