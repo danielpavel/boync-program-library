@@ -89,15 +89,21 @@ pub mod auction_house {
         let system_program = &ctx.accounts.system_program;
 
         let is_native = treasury_mint.key() == spl_token::native_mint::id();
+        let auction_house_seeds = [
+            PREFIX.as_bytes(),
+            auction_house.creator.as_ref(),
+            auction_house.treasury_mint.as_ref(),
+            &[auction_house.bump],
+        ];
 
+        let ah_key = auction_house.key();
+        let auction_house_treasury_seeds = [
+            PREFIX.as_bytes(),
+            ah_key.as_ref(),
+            TREASURY.as_bytes(),
+            &[auction_house.treasury_bump],
+        ];
         if !is_native {
-            let auction_house_seeds = [
-                PREFIX.as_bytes(),
-                auction_house.creator.as_ref(),
-                auction_house.treasury_mint.as_ref(),
-                &[auction_house.bump],
-            ];
-
             invoke_signed(
                 &spl_token::instruction::transfer(
                     token_program.key,
@@ -116,14 +122,6 @@ pub mod auction_house {
                 &[&auction_house_seeds],
             )?;
         } else {
-            let ah_key = auction_house.key();
-            let auction_house_treasury_seeds = [
-                PREFIX.as_bytes(),
-                ah_key.as_ref(),
-                TREASURY.as_bytes(),
-                &[auction_house.treasury_bump],
-            ];
-
             invoke_signed(
                 &system_instruction::transfer(
                     &auction_house_treasury.key(),
@@ -364,6 +362,10 @@ pub mod auction_house {
         )
     }
 
+    /*
+     * =========================================================
+     * !!! BOYNC EDIT
+     * =========================================================
     /// Create a public buy bid by creating a `public_buyer_trade_state` account and an `escrow_payment` account and funding the escrow with the necessary SOL or SPL token amount.
     pub fn public_buy<'info>(
         ctx: Context<'_, '_, '_, 'info, PublicBuy<'info>>,
@@ -397,6 +399,8 @@ pub mod auction_house {
             token_size,
         )
     }
+    * !!! END OF BOYNC EDIT !!!
+    */
 
     /// Cancel a bid or ask by revoking the token delegate, transferring all lamports from the trade state account to the fee payer, and setting the trade state account data to zero so it can be garbage collected.
     pub fn cancel<'info>(
@@ -452,7 +456,10 @@ pub mod auction_house {
         )
     }
 
-    /* BOYNC - USELESS
+    /*
+     * =========================================================
+     * !!! BOYNC EDIT
+     * =========================================================
     pub fn execute_partial_sale<'info>(
         ctx: Context<'_, '_, '_, 'info, ExecutePartialSale<'info>>,
         escrow_payment_bump: u8,
@@ -474,6 +481,7 @@ pub mod auction_house {
             partial_order_price,
         )
     }
+    * !!! END OF BOYNC EDIT !!!
     */
 
     pub fn auctioneer_execute_sale<'info>(
@@ -494,7 +502,10 @@ pub mod auction_house {
         )
     }
 
-    /* BOYNC - USELESS
+    /*
+     * =========================================================
+     * !!! BOYNC EDIT
+     * =========================================================
     pub fn auctioneer_execute_partial_sale<'info>(
         ctx: Context<'_, '_, '_, 'info, AuctioneerExecutePartialSale<'info>>,
         escrow_payment_bump: u8,
@@ -516,6 +527,7 @@ pub mod auction_house {
             partial_order_price,
         )
     }
+    * !!! END OF BOYNC EDIT !!!
     */
 
     pub fn sell<'info>(

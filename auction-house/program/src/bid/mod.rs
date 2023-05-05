@@ -14,6 +14,11 @@ use crate::{
     TRADE_STATE_SIZE,
 };
 
+/*
+ * =========================================================
+ * !!! BOYNC EDIT: We don't need the public buy part !!!
+ * =========================================================
+ *
 /// Accounts for the [`public_bid` handler](fn.public_bid.html).
 #[derive(Accounts)]
 #[instruction(
@@ -240,6 +245,7 @@ pub struct AuctioneerPublicBuy<'info> {
     rent: Sysvar<'info, Rent>,
 }
 
+
 /// Create a bid on a specific SPL token.
 /// Public bids are specific to the token itself, rather than the auction, and remain open indefinitely until either the user closes it or the requirements for the bid are met and it is matched with a counter bid and closed as a transaction.
 pub fn auctioneer_public_bid(
@@ -279,6 +285,9 @@ pub fn auctioneer_public_bid(
             .ok_or(AuctionHouseError::BumpSeedNotInHashMap)?,
     )
 }
+*
+* !!! END OF BOYNC EDIT [1]: We don't need the public buy part !!!
+*/
 
 /// Accounts for the [`private_bid` handler](fn.private_bid.html).
 #[derive(Accounts)]
@@ -711,6 +720,9 @@ pub fn bid_logic<'info>(
         let wallet_key = wallet.key();
         let token_account_key = token_account.key();
         if public {
+            /* ===========================================
+             * BOYNC EDIT -> `public` will always be false
+             * ===========================================
             create_or_allocate_account_raw(
                 crate::id(),
                 &ts_info,
@@ -730,6 +742,7 @@ pub fn bid_logic<'info>(
                     &[trade_state_bump],
                 ],
             )?;
+            */
         } else {
             create_or_allocate_account_raw(
                 crate::id(),
