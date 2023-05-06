@@ -41,13 +41,13 @@ pub fn assert_higher_bid(
     Ok(())
 }
 
-pub fn assert_exceeds_reserve_price(
-    _listing_config: &Account<ListingConfig>,
-    _new_bid_price: u64,
+pub fn assert_exceeds_next_bid_price(
+    listing_config: &Account<ListingConfig>,
+    new_bid_price: u64,
 ) -> Result<()> {
-    //if new_bid_price < listing_config.reserve_price {
-    //    return err!(AuctioneerError::BelowReservePrice);
-    //}
+    if new_bid_price < listing_config.next_bid {
+       return err!(AuctioneerError::BelowNextBidPrice);
+    }
 
     Ok(())
 }

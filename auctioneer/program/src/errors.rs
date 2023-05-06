@@ -31,8 +31,8 @@ pub enum AuctioneerError {
     NotHighestBidder,
 
     // 6007
-    #[msg("The bid price must be greater than the reserve price")]
-    BelowReservePrice,
+    #[msg("The bid price must be greater than the previous bid")]
+    BelowNextBidPrice,
 
     // 6008
     #[msg("The bid must match the highest bid plus the minimum bid increment")]

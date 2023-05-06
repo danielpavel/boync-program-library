@@ -6,6 +6,7 @@ use common::*;
 use utils::setup_functions::*;
 
 use mpl_testing_utils::{solana::airdrop, utils::Metadata};
+use mpl_auctioneer::sell::config::ListingConfig;
 use solana_sdk::signer::Signer;
 use std::{assert_eq, time::SystemTime};
 

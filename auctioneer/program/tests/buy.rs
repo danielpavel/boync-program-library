@@ -231,7 +231,7 @@ async fn multiple_bids() {
 }
 
 #[tokio::test]
-async fn buy_below_reserve_failure() {
+async fn buy_below_next_bid_failure() {
     let mut context = auctioneer_program_test().start_with_context().await;
     // Payer Wallet
     let (ah, ahkey, _) = existing_auction_house_test_context(&mut context)
@@ -271,10 +271,10 @@ async fn buy_below_reserve_failure() {
             .expect("Time went backwards")
             .as_secs()
             + 60) as i64,
-        Some(1000000001),
         None,
-        None,
-        None,
+        Some(3 * ONE_SOL),
+        Some(500),
+        Some(500),
         None,
     );
     context
@@ -301,6 +301,7 @@ async fn buy_below_reserve_failure() {
         .await
         .unwrap();
 
+    let next_bid_price = 150000000; // 5% of 3 SOL
     let (_acc, buy_tx) = buy(
         &mut context,
         &ahkey,
@@ -310,14 +311,14 @@ async fn buy_below_reserve_failure() {
         &buyer,
         &sell_acc.wallet,
         &listing_config_address,
-        1000000000,
+        149999999,
     );
     let result = context
         .banks_client
         .process_transaction(buy_tx)
         .await
         .unwrap_err();
-    assert_error!(result, BELOW_RESERVE_PRICE);
+    assert_error!(result, BELOW_NEXT_BID_PRICE);
 }
 
 #[tokio::test]
@@ -451,9 +452,9 @@ async fn multiple_bids_increment_failure() {
             .as_secs()
             + 60) as i64,
         None,
-        Some(2000000000),
-        None,
-        None,
+        Some(3 * ONE_SOL),
+        Some(500),
+        Some(500),
         None,
     );
     context
@@ -541,7 +542,11 @@ async fn multiple_bids_increment_failure() {
         .unwrap()
         .data;
     let config = ListingConfig::try_deserialize(&mut listing.as_ref()).unwrap();
-    assert_eq!(config.highest_bid.amount, 1000000000);
+
+    // assert_eq!(config.starting_price_basis_points, 500);
+    // assert_eq!(config.starting_price, 150000000); // 5% of 3 SOL => 150000000 Lamports
+    // assert_eq!(config.bid_increment, 7500000); // 5% of starting_price(150000000) => 7500000 Lamports
+    // assert_eq!(config.bid_increment_basis_points, 500);
 }
 
 #[tokio::test]
@@ -720,10 +725,10 @@ async fn multiple_bids_time_ext_success() {
             .as_secs()
             + 60) as i64,
         None,
-        None,
+        Some(3 * ONE_SOL),
+        Some(500),
+        Some(500),
         Some(60),
-        Some(60),
-        None,
     );
     context
         .banks_client

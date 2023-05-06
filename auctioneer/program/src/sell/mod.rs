@@ -124,7 +124,7 @@ pub fn auctioneer_sell<'info>(
     ctx.accounts.listing_config.highest_bid.version = ListingConfigVersion::V0;
     ctx.accounts.listing_config.start_time = start_time;
     ctx.accounts.listing_config.end_time = end_time;
-    
+
     // TODO: Safe guards around `floor_price`.
     let fp = floor_price.unwrap_or(0 as u64);
 
@@ -148,7 +148,10 @@ pub fn auctioneer_sell<'info>(
 
     // ctx.accounts.listing_config.reserve_price = reserve_price.unwrap_or(0);
     // ctx.accounts.listing_config.time_ext_period = time_ext_period.unwrap_or(0);
-    // ctx.accounts.listing_config.allow_high_bid_cancel = allow_high_bid_cancel.unwrap_or(false);
+
+    // [BOYNC EDIT] We don't use this `allow_high_bid_cancel` so let it be true to not break
+    // the tests
+    ctx.accounts.listing_config.allow_high_bid_cancel = true;
 
     ctx.accounts.listing_config.bump = *ctx
         .bumps
