@@ -1266,6 +1266,10 @@ pub async fn auctioneer_execute_sale_no_delegate_fails() {
     assert_error!(error, ACCOUNT_NOT_INITIALIZED);
 }
 
+/**
+ * ======================================================
+ * BOYNC EDIT: we don't use the public bid / buy feature
+ * ======================================================
 #[tokio::test]
 async fn execute_public_sale_success() {
     let mut context = auction_house_program_test().start_with_context().await;
@@ -2004,6 +2008,7 @@ async fn auctioneer_execute_public_sale_no_delegate_fails() {
 
     assert_error!(error, ACCOUNT_NOT_INITIALIZED);
 }
+*/
 
 /*
 #[tokio::test]

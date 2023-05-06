@@ -12,7 +12,7 @@ use mpl_auction_house::{
         find_auction_house_treasury_address, find_auctioneer_pda,
         find_auctioneer_trade_state_address, find_bid_receipt_address, find_escrow_payment_address,
         find_listing_receipt_address, find_program_as_signer_address,
-        find_public_bid_trade_state_address, find_purchase_receipt_address,
+        find_purchase_receipt_address,
         find_trade_state_address,
     },
     AuctionHouse, AuthorityScope,
@@ -383,6 +383,10 @@ pub fn auctioneer_buy(
     )
 }
 
+/**
+ * ===============================================
+ * BOYNC EDIT: we don't use  public_buy
+ * ===============================================
 pub fn public_buy(
     context: &mut ProgramTestContext,
     ahkey: &Pubkey,
@@ -546,6 +550,7 @@ pub fn auctioneer_public_buy(
         ),
     )
 }
+*/
 
 pub fn execute_sale(
     context: &mut ProgramTestContext,
