@@ -7,7 +7,7 @@ use anchor_spl::token::{Token, TokenAccount};
 
 use mpl_auction_house::{
     self,
-    constants::{AUCTIONEER, FEE_PAYER, PREFIX, SIGNER},
+    constants::{AUCTIONEER, FEE_PAYER, PREFIX, SIGNER, LISTING_TREASURY},
     cpi::accounts::AuctioneerSell as AHSell,
     program::AuctionHouse as AuctionHouseProgram,
     AuctionHouse, errors::AuctionHouseError,
@@ -17,7 +17,7 @@ use solana_program::{clock::UnixTimestamp, program::invoke_signed};
 
 /// Accounts for the [`sell_with_auctioneer` handler](auction_house/fn.sell_with_auctioneer.html).
 #[derive(Accounts, Clone)]
-#[instruction(trade_state_bump: u8, free_trade_state_bump: u8, program_as_signer_bump: u8, auctioneer_authority_bump: u8, token_size: u64)]
+#[instruction(trade_state_bump: u8, free_trade_state_bump: u8, seller_trade_state_treasury_bump:u8, program_as_signer_bump: u8, auctioneer_authority_bump: u8, token_size: u64)]
 pub struct AuctioneerSell<'info> {
     /// Auction House Program used for CPI call
     pub auction_house_program: Program<'info, AuctionHouseProgram>,
@@ -78,6 +78,9 @@ pub struct AuctioneerSell<'info> {
     #[account(mut, seeds=[PREFIX.as_bytes(), wallet.key().as_ref(), auction_house.key().as_ref(), token_account.key().as_ref(), auction_house.treasury_mint.as_ref(), token_account.mint.as_ref(), &0u64.to_le_bytes(), &token_size.to_le_bytes()], seeds::program=auction_house_program, bump=free_trade_state_bump)]
     pub free_seller_trade_state: UncheckedAccount<'info>,
 
+    #[account(mut, seeds=[LISTING_TREASURY.as_bytes(), seller_trade_state.key().as_ref()], seeds::program=auction_house_program, bump=seller_trade_state_treasury_bump)]
+    pub seller_trade_state_treasury: UncheckedAccount<'info>,
+
     /// CHECK: Verified through CPI
     /// The auctioneer program PDA running this auction.
     pub auctioneer_authority: UncheckedAccount<'info>,
@@ -109,6 +112,7 @@ pub fn auctioneer_sell<'info>(
     ctx: Context<'_, '_, '_, 'info, AuctioneerSell<'info>>,
     trade_state_bump: u8,
     free_trade_state_bump: u8,
+    seller_trade_state_treasury_bump: u8,
     program_as_signer_bump: u8,
     auctioneer_authority_bump: u8,
     token_size: u64,
@@ -167,6 +171,7 @@ pub fn auctioneer_sell<'info>(
         auction_house_fee_account: ctx.accounts.auction_house_fee_account.to_account_info(),
         seller_trade_state: ctx.accounts.seller_trade_state.to_account_info(),
         free_seller_trade_state: ctx.accounts.free_seller_trade_state.to_account_info(),
+        seller_trade_state_treasury: ctx.accounts.seller_trade_state_treasury.to_account_info(),
         authority: ctx.accounts.authority.to_account_info(),
         auctioneer_authority: ctx.accounts.auctioneer_authority.to_account_info(),
         ah_auctioneer_pda: ctx.accounts.ah_auctioneer_pda.to_account_info(),
@@ -179,6 +184,7 @@ pub fn auctioneer_sell<'info>(
     let sell_data = mpl_auction_house::instruction::AuctioneerSell {
         trade_state_bump,
         free_trade_state_bump,
+        seller_trade_state_treasury_bump,
         program_as_signer_bump,
         token_size,
     };

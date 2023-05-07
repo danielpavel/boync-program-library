@@ -535,6 +535,7 @@ pub mod auction_house {
         trade_state_bump: u8,
         free_trade_state_bump: u8,
         program_as_signer_bump: u8,
+        seller_trade_state_treasury_bump: u8,
         buyer_price: u64,
         token_size: u64,
     ) -> Result<()> {
@@ -542,6 +543,7 @@ pub mod auction_house {
             ctx,
             trade_state_bump,
             free_trade_state_bump,
+            seller_trade_state_treasury_bump,
             program_as_signer_bump,
             buyer_price,
             token_size,
@@ -552,6 +554,7 @@ pub mod auction_house {
         ctx: Context<'_, '_, '_, 'info, AuctioneerSell<'info>>,
         trade_state_bump: u8,
         free_trade_state_bump: u8,
+        seller_trade_state_treasury_bump: u8,
         program_as_signer_bump: u8,
         token_size: u64,
     ) -> Result<()> {
@@ -559,6 +562,7 @@ pub mod auction_house {
             ctx,
             trade_state_bump,
             free_trade_state_bump,
+            seller_trade_state_treasury_bump,
             program_as_signer_bump,
             token_size,
         )

@@ -3,11 +3,11 @@
 
 use anchor_lang::{
     prelude::*,
-    solana_program::{program::invoke, system_instruction},
+    solana_program::{program::invoke, program::invoke_signed, system_instruction},
     AnchorDeserialize,
 };
 use anchor_spl::token::{Mint, Token, TokenAccount};
-use solana_program::program_memory::sol_memset;
+use solana_program::{program_memory::sol_memset, lamports};
 
 use crate::{
     constants::*, errors::AuctionHouseError, utils::*, AuctionHouse, Auctioneer, AuthorityScope,
@@ -892,6 +892,23 @@ pub fn auctioneer_bid_logic<'info>(
                     system_program.to_account_info(),
                 ],
             )?;
+
+            /* BOYNC UPDATE: We simply transfer the `buyer_price`
+             *               to auction_house_treasury
+             * TODO: replace auction_house_treasury_account with seller_trade_state_treasury
+            invoke_signed(
+                &system_instruction::transfer(
+                    &escrow_payment_account.key(),
+                    &auction_house_treasury_account.key(),
+                    escrow_payment_account.lamports()
+                ), &[
+                    escrow_payment_account.to_account_info(),
+                    auction_house_treasury_account.to_account_info(),
+                    system_program.to_account_info()
+                ],
+                &[&escrow_signer_seeds]
+            )?;
+            */
         }
     } else {
         let escrow_payment_loaded: spl_token::state::Account =

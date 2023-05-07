@@ -12,6 +12,7 @@ use mpl_auction_house::{
         find_auction_house_treasury_address, find_auctioneer_pda,
         find_auctioneer_trade_state_address, find_escrow_payment_address,
         find_program_as_signer_address, find_trade_state_address,
+        find_seller_trade_state_treasury
     },
     AuctionHouse,
 };
@@ -363,6 +364,9 @@ pub fn execute_sale(
     (execute_sale_accounts, tx)
 }
 
+/*
+ * BOYNC EDIT: we don't need this !
+ *
 pub fn sell_mint(
     context: &mut ProgramTestContext,
     ahkey: &Pubkey,
@@ -465,6 +469,7 @@ pub fn sell_mint(
         ),
     )
 }
+*/
 
 pub fn sell(
     context: &mut ProgramTestContext,
@@ -503,6 +508,8 @@ pub fn sell(
         1,
     );
 
+    let (seller_trade_state_treasury, sts_treasury_bump) = find_seller_trade_state_treasury(&seller_trade_state);
+
     let (listing_config_address, _list_bump) = find_listing_config_address(
         &test_metadata.token.pubkey(),
         ahkey,
@@ -527,6 +534,7 @@ pub fn sell(
         auction_house_fee_account: ah.auction_house_fee_account,
         seller_trade_state,
         free_seller_trade_state,
+        seller_trade_state_treasury,
         token_program: spl_token::id(),
         system_program: solana_program::system_program::id(),
         program_as_signer: pas,
@@ -539,6 +547,7 @@ pub fn sell(
     let data = mpl_auctioneer::instruction::Sell {
         trade_state_bump: sts_bump,
         free_trade_state_bump: free_sts_bump,
+        seller_trade_state_treasury: sts_treasury_bump,
         program_as_signer_bump: pas_bump,
         auctioneer_authority_bump: aa_bump,
         token_size: 1,

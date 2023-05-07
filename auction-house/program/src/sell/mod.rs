@@ -91,6 +91,18 @@ pub struct Sell<'info> {
     )]
     pub free_seller_trade_state: UncheckedAccount<'info>,
 
+    /// CHECK: Not dangerous. Account seeds checked in constraint.
+    /// Trade state treasury PDA collecting bidder fees
+    #[account(
+        mut,
+        seeds = [
+            LISTING_TREASURY.as_bytes(),
+            seller_trade_state.key().as_ref()
+        ],
+        bump
+    )]
+    seller_trade_state_treasury: UncheckedAccount<'info>,
+
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 
@@ -112,6 +124,7 @@ impl<'info> From<AuctioneerSell<'info>> for Sell<'info> {
             auction_house_fee_account: a.auction_house_fee_account,
             seller_trade_state: a.seller_trade_state,
             free_seller_trade_state: a.free_seller_trade_state,
+            seller_trade_state_treasury: a.seller_trade_state_treasury,
             token_program: a.token_program,
             system_program: a.system_program,
             program_as_signer: a.program_as_signer,
@@ -125,6 +138,7 @@ impl<'info> From<AuctioneerSell<'info>> for Sell<'info> {
 #[instruction(
     trade_state_bump: u8,
     free_trade_state_bump: u8,
+    seller_trade_state_treasury_bump: u8,
     program_as_signer_bump: u8,
     token_size: u64
 )]
@@ -213,6 +227,18 @@ pub struct AuctioneerSell<'info> {
     pub free_seller_trade_state: UncheckedAccount<'info>,
 
     /// CHECK: Not dangerous. Account seeds checked in constraint.
+    /// Trade state treasury PDA collecting bidder fees
+    #[account(
+        mut,
+        seeds = [
+            LISTING_TREASURY.as_bytes(),
+            seller_trade_state.key().as_ref()
+        ],
+        bump
+    )]
+    seller_trade_state_treasury: UncheckedAccount<'info>,
+
+    /// CHECK: Not dangerous. Account seeds checked in constraint.
     /// The auctioneer PDA owned by Auction House storing scopes.
     #[account(
         seeds = [
@@ -237,6 +263,7 @@ pub fn sell<'info>(
     ctx: Context<'_, '_, '_, 'info, Sell<'info>>,
     trade_state_bump: u8,
     free_trade_state_bump: u8,
+    seller_trade_state_treasury_bump: u8,
     program_as_signer_bump: u8,
     buyer_price: u64,
     token_size: u64,
@@ -256,6 +283,10 @@ pub fn sell<'info>(
         .bumps
         .get("free_seller_trade_state")
         .ok_or(AuctionHouseError::BumpSeedNotInHashMap)?;
+    let seller_trade_state_treasury_canonical_bump = *ctx
+        .bumps
+        .get("seller_trade_state_treasury")
+        .ok_or(AuctionHouseError::BumpSeedNotInHashMap)?;
     let program_as_signer_canonical_bump = *ctx
         .bumps
         .get("program_as_signer")
@@ -263,6 +294,7 @@ pub fn sell<'info>(
 
     if (trade_state_canonical_bump != trade_state_bump)
         || (free_trade_state_canonical_bump != free_trade_state_bump)
+        || (seller_trade_state_treasury_canonical_bump != seller_trade_state_treasury_bump)
         || (program_as_signer_canonical_bump != program_as_signer_bump)
     {
         return Err(AuctionHouseError::BumpSeedNotInHashMap.into());
@@ -272,6 +304,7 @@ pub fn sell<'info>(
         ctx.accounts,
         ctx.program_id,
         trade_state_bump,
+        seller_trade_state_treasury_bump,
         free_trade_state_bump,
         program_as_signer_bump,
         buyer_price,
@@ -284,6 +317,7 @@ pub fn auctioneer_sell<'info>(
     ctx: Context<'_, '_, '_, 'info, AuctioneerSell<'info>>,
     trade_state_bump: u8,
     free_trade_state_bump: u8,
+    seller_trade_state_treasury_bump: u8,
     program_as_signer_bump: u8,
     token_size: u64,
 ) -> Result<()> {
@@ -310,6 +344,10 @@ pub fn auctioneer_sell<'info>(
         .bumps
         .get("free_seller_trade_state")
         .ok_or(AuctionHouseError::BumpSeedNotInHashMap)?;
+    let seller_trade_state_treasury_canonical_bump = *ctx
+        .bumps
+        .get("seller_trade_state_treasury")
+        .ok_or(AuctionHouseError::BumpSeedNotInHashMap)?;
     let program_as_signer_canonical_bump = *ctx
         .bumps
         .get("program_as_signer")
@@ -318,6 +356,7 @@ pub fn auctioneer_sell<'info>(
     if (trade_state_canonical_bump != trade_state_bump)
         || (free_trade_state_canonical_bump != free_trade_state_bump)
         || (program_as_signer_canonical_bump != program_as_signer_bump)
+        || (seller_trade_state_treasury_canonical_bump != seller_trade_state_treasury_bump)
     {
         return Err(AuctionHouseError::BumpSeedNotInHashMap.into());
     }
@@ -328,6 +367,7 @@ pub fn auctioneer_sell<'info>(
         &mut accounts,
         ctx.program_id,
         trade_state_bump,
+        seller_trade_state_treasury_bump,
         free_trade_state_bump,
         program_as_signer_bump,
         u64::MAX,
@@ -340,6 +380,7 @@ fn sell_logic<'info>(
     accounts: &mut Sell<'info>,
     program_id: &Pubkey,
     trade_state_bump: u8,
+    _seller_trade_state_treasury_bump: u8,
     _free_trade_state_bump: u8,
     _program_as_signer_bump: u8,
     buyer_price: u64,

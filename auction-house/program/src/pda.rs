@@ -112,6 +112,13 @@ pub fn find_listing_receipt_address(trade_state: &Pubkey) -> (Pubkey, u8) {
     )
 }
 
+pub fn find_seller_trade_state_treasury_address(trade_state: &Pubkey) -> (Pubkey, u8) {
+    Pubkey::find_program_address(
+        &[LISTING_TREASURY.as_bytes(), trade_state.as_ref()],
+        &id(),
+    )
+}
+
 /// Return purchase receipt `Pubkey` address and bump seed.
 pub fn find_purchase_receipt_address(
     seller_trade_state: &Pubkey,
